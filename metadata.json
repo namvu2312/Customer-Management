@@ -1,0 +1,5 @@
+{
+  "name": "Customer Management App",
+  "description": "A simple web application for shop owners to manage customer information, including data entry, storage, search, edit, and delete functionalities.",
+  "requestFramePermissions": []
+}
