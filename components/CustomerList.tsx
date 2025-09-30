@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Customer } from '../types';
 import CustomerCard from './CustomerCard';

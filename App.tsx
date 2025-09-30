@@ -1,15 +1,18 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Customer } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import CustomerForm from './components/CustomerForm';
 import CustomerList from './components/CustomerList';
 import { SearchIcon, UsersIcon } from './components/Icons';
+import Pagination from './components/Pagination';
+
+const ITEMS_PER_PAGE = 5;
 
 const App: React.FC = () => {
   const [customers, setCustomers] = useLocalStorage<Customer[]>('customers', []);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleSaveCustomer = (customer: Omit<Customer, 'id'>) => {
     if (editingCustomer) {
@@ -57,6 +60,24 @@ const App: React.FC = () => {
         customer.phone.includes(lowercasedTerm)
     );
   }, [customers, searchTerm]);
+  
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+      setCurrentPage(1);
+  }, [searchTerm, customers.length]);
+
+  const totalPages = Math.ceil(filteredCustomers.length / ITEMS_PER_PAGE);
+  
+  const paginatedCustomers = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredCustomers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredCustomers, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+        setCurrentPage(page);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 font-sans">
@@ -95,10 +116,17 @@ const App: React.FC = () => {
                 />
               </div>
               <CustomerList
-                customers={filteredCustomers}
+                customers={paginatedCustomers}
                 onEdit={handleEditCustomer}
                 onDelete={handleDeleteCustomer}
               />
+               {totalPages > 1 && (
+                  <Pagination 
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+               )}
             </div>
           </div>
         </div>
